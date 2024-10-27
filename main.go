@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"net"
 	"net/http"
 	"os"
 
@@ -89,6 +90,15 @@ func main() {
 			},
 			newPubSubClient,
 		),
+		fx.Invoke(func(lifecycle fx.Lifecycle) {
+			go func() {
+				names, err := net.LookupHost("pubsub.googleapis.com")
+				if err != nil {
+					return
+				}
+				logger.Printf("%#v\n", names)
+			}()
+		}),
 		fx.Invoke(func(lifecycle fx.Lifecycle, client *pubsub.Client) {
 			http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 				w.Write([]byte("Hello, Cloud Run!"))
